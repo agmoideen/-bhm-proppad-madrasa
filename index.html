@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BHM PROPPAD MADRASA PORTAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&display=swap');
+        body { font-family: 'Manjari', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 650px; text-align: center; border-top: 8px solid #1a73e8; }
+        h2 { color: #1a73e8; margin-bottom: 5px; font-size: 22px; }
+        .sub-title { font-size: 13px; background: #fff3cd; color: #856404; padding: 5px 12px; border-radius: 15px; display: inline-block; font-weight: bold; margin-bottom: 15px; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 15px; box-sizing: border-box; font-family: inherit; }
+        button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; font-family: inherit; }
+        button:hover { background: #1557b0; }
+        .nav-links { display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; }
+        .nav-links a { color: #1a73e8; text-decoration: none; cursor: pointer; font-weight: bold; }
+        .info-box { text-align: left; border: 2px solid #f0f0f0; border-radius: 12px; overflow: hidden; margin-top: 15px; background: #fff; padding: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+        th, td { padding: 8px 10px; border: 1px solid #ddd; text-align: center; }
+        th { background: #f1f3f5; color: #333; }
+        .sub-name { text-align: left !important; font-weight: bold; }
+        .total-box { background: #1a73e8; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; font-size: 16px; border-radius: 6px; margin-top: 15px; }
+        .result-status { color: white; padding: 10px; margin-top: 10px; border-radius: 6px; font-weight: bold; text-align: center; font-size: 16px; }
+        .pass { background: #28a745; }
+        .fail { background: #dc3545; }
+        .btns { margin-top: 15px; display: flex; gap: 10px; }
+        .btn { padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; color: white; flex: 1; text-align: center; font-size: 14px; }
+        @media print { .nav-links, .btns, form, h3, .sub-title { display: none; } body { background: white; } .card { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 id="institutionDisplay">BHM PROPPAD MADRASA</h2>
+    <div id="examTitleDisplay" class="sub-title">EXAM PORTAL</div>
+    
+    <!-- HOME VIEW -->
+    <div id="homeView">
+        <form id="resultForm">
+            <select id="classSelect" required>
+                <option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക</option>
+            </select>
+            <input type="number" id="rollNo" placeholder="അഡ്മിഷൻ നമ്പർ / റോൾ നമ്പർ" required>
+            <button type="submit">പ്രോഗ്രസ് റിപ്പോർട്ട് കാണുക</button>
+        </form>
+        <div class="nav-links">
+            <a onclick="showTeacherLogin()">ഉസ്താദ് ലോഗിൻ</a>
+            <a onclick="showAdminLogin()">അഡ്മിൻ പാനൽ</a>
+        </div>
+    </div>
+
+    <!-- RESULT VIEW -->
+    <div id="resultView" style="display: none;">
+        <div id="res"></div>
+        <div class="btns">
+            <button class="btn" style="background: #6c757d;" onclick="goHome()">മറ്റൊരു കുട്ടി</button>
+            <button class="btn" style="background: #28a745;" onclick="window.print()">പ്രിന്റ് / PDF</button>  
+        </div>
+    </div>
+
+    <!-- TEACHER LOGIN -->
+    <div id="teacherLoginView" style="display: none;">
+        <h3>ഉസ്താദ് ലോഗിൻ</h3>
+        <input type="password" id="teacherPass" placeholder="പാസ്‌വേർഡ് നൽകുക">
+        <button onclick="verifyTeacher()">ലോഗിൻ ചെയ്യുക</button>
+        <div class="nav-links"><a onclick="goHome()">പുറകോട്ട്</a></div>
+    </div>
+
+    <!-- TEACHER DASHBOARD -->
+    <div id="teacherDashboard" style="display: none; text-align: left;">
+        <h3 id="teacherWelcome"></h3>
+        <p>അനുവദിച്ച ക്ലാസ്: <b id="tClassDisplay"></b></p>
+        <div id="teacherMarkContainer"></div>
+        <button class="btn" style="background: #dc3545; margin-top:15px;" onclick="goHome()">ലോഗ് ഔട്ട്</button>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <div id="adminLoginView" style="display: none;">
+        <h3>അഡ്മിൻ പാനൽ</h3>
+        <input type="password" id="adminPass" placeholder="അഡ്മിൻ പാസ്‌വേർഡ്">
+        <button onclick="verifyAdmin()">ലോഗിൻ</button>
+        <div class="nav-links"><a onclick="goHome()">പുറകോട്ട്</a></div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDashboard" style="display: none; text-align: left;">
+        <h3>അഡ്മിൻ ഡാഷ്‌ബോർഡ്</h3>
+        <select id="adminReportClassSelect">
+            <option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക</option>
+        </select>
+        <button style="background: #1a73e8;" onclick="loadAdminReport()">ക്ലാസ് റിപ്പോർട്ട് കാണുക</button>
+        <button style="background: #dc3545; margin-top: 15px;" onclick="goHome()">ലോഗ് ഔട്ട്</button>
+    </div>
+
+    <!-- ADMIN REPORT VIEW -->
+    <div id="adminReportView" style="display: none; text-align: left;">
+        <h3 style="text-align:center;">ക്ലാസ് മാർക്ക് റിപ്പോർട്ട്</h3>
+        <div id="adminReportContent"></div>
+        <div class="btns">
+            <button class="btn" style="background: #6c757d;" onclick="showAdminDashboard()">തിരികെ പോവുക</button>
+            <button class="btn" style="background: #28a745;" onclick="window.print()">പ്രിന്റ് ചെയ്യുക</button>  
+        </div>
+    </div>
+</div>
+
+<script>
+    // പുതിയ ഗൂഗിൾ ആപ്പ്സ് സ്ക്രിപ്റ്റ് വെബ് ആപ്പ് ലിങ്ക്
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbxE-byS0iorXIOiBAgLHr0pq841Oj89xC38nGpFmh7VorMRlvZFZ8Yq84lRSNC3Mx-iqQ/exec";
+    let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL" };
+
+    window.onload = function() {
+        fetch(`${webAppUrl}?action=getClasses`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    if(data.config) {
+                        globalConfig = data.config;
+                        document.getElementById('institutionDisplay').innerText = globalConfig.institution;
+                        document.getElementById('examTitleDisplay').innerText = globalConfig.examName;
+                    }
+                    let select = document.getElementById('classSelect');
+                    let adminSelect = document.getElementById('adminReportClassSelect');
+                    select.innerHTML = '<option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക</option>';
+                    adminSelect.innerHTML = '<option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക</option>';
+                    
+                    data.classes.forEach(cls => {
+                        select.innerHTML += `<option value="${cls}">${cls}</option>`;
+                        adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                    });
+                }
+            });
+    }
+
+    document.getElementById('resultForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const rollNo = document.getElementById('rollNo').value.trim();
+        const className = document.getElementById('classSelect').value.trim();
+
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('resultView').style.display = 'block';
+        document.getElementById('res').innerHTML = "<p>വിവരങ്ങൾ പരിശോധിക്കുന്നു...</p>";
+
+        fetch(`${webAppUrl}?action=getResult&class=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    let sRow = data.student;
+                    let subjects = data.subjectDetails;
+                    
+                    let h = `<div class="info-box">
+                                <div style="border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 10px;">
+                                    <strong>അഡ്മിഷൻ നമ്പർ:</strong> ${sRow[0]}<br>
+                                    <strong>കുട്ടിയുടെ പേര്:</strong> ${sRow[1]}<br>
+                                    <strong>ക്ലാസ്:</strong> ${className}
+                                </div>
+                                <table>
+                                    <tr><th>വിഷയം</th><th>മാർക്ക്</th><th>ഗ്രേഡ്</th></tr>`;
+                    
+                    subjects.forEach(sub => {
+                        h += `<tr><td class="sub-name">${sub.subject}</td><td>${sub.mark}</td><td><b>${sub.grade}</b></td></tr>`;
+                    });
+                    
+                    h += `</table>`;
+                    h += `<div class="total-box"><span>ആകെ മാർക്ക് (Total)</span><span>${data.calculatedTotal}</span></div>`;
+                    
+                    let resClass = data.overallResult === "PASSED" ? "pass" : "fail";
+                    let resText = data.overallResult === "PASSED" ? "വിജയിച്ചു (PASS)" : "പരാജയപ്പെട്ടു (FAIL)";
+                    h += `<div class="result-status ${resClass}">ഫലം: ${resText}</div>`;
+                    h += `</div>`;
+                    
+                    document.getElementById('res').innerHTML = h;
+                } else {
+                    document.getElementById('res').innerHTML = `<p style='color:red; text-align:center;'>കുട്ടിയെ കണ്ടെത്താനായില്ല. റോൾ നമ്പർ പരിശോധിക്കുക.</p>`;
+                }
+            });
+    });
+
+    function showTeacherLogin() { hideAll(); document.getElementById('teacherLoginView').style.display = 'block'; }
+    function showAdminLogin() { hideAll(); document.getElementById('adminLoginView').style.display = 'block'; }
+    function showAdminDashboard() { hideAll(); document.getElementById('adminDashboard').style.display = 'block'; }
+
+    function verifyTeacher() {
+        let pass = document.getElementById('teacherPass').value;
+        fetch(`${webAppUrl}?action=verifyTeacher&pass=${pass}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    hideAll();
+                    document.getElementById('teacherDashboard').style.display = 'block';
+                    document.getElementById('teacherWelcome').innerText = `സ്വാഗതം, ${data.teacherName}`;
+                    document.getElementById('tClassDisplay').innerText = data.allowedClass;
+                    loadTeacherMarkEntry(data.allowedClass);
+                } else {
+                    alert("തെറ്റായ പാസ്‌വേർഡ്!");
+                }
+            });
+    }
+
+    function loadTeacherMarkEntry(className) {
+        fetch(`${webAppUrl}?action=getTeacherClassData&className=${encodeURIComponent(className)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    let headers = data.headers;
+                    let rows = data.rows;
+                    let h = `<p><b>ക്ലാസ്: ${className} - മാർക്ക് എൻട്രി</b></p><div style="max-height:300px; overflow-y:auto;"><table><tr><th>Adm</th><th>പേര്</th><th>നടപടി</th></tr>`;
+                    rows.forEach((r) => {
+                        h += `<tr><td>${r[0]}</td><td>${r[1]}</td><td><button onclick='editMarks("${r[0]}", ${JSON.stringify(headers)}, ${JSON.stringify(r)}, "${className}")' style="padding:5px 8px; font-size:12px; width:auto;">എഡിറ്റ്</button></td></tr>`;
+                    });
+                    h += `</table></div><div id="editArea" style="margin-top:15px; border-top:1px solid #ddd; padding-top:10px;"></div>`;
+                    document.getElementById('teacherMarkContainer').innerHTML = h;
+                }
+            });
+    }
+
+    function editMarks(rollNo, headers, row, className) {
+        let h = `<h4>കുട്ടി: ${row[1]} (Adm: ${rollNo})</h4>`;
+        for(let i=2; i<headers.length; i++) {
+            let head = headers[i];
+            if(head && !head.includes("TOTAL") && !head.includes("ATTENDANCE") && !head.includes("REMARKS")) {
+                h += `<label style="font-size:13px; font-weight:bold;">${head}:</label>
+                      <div style="display:flex; gap:5px; margin-bottom:8px;">
+                      <input type="number" id="m_${i}" value="${row[i]}" style="margin-bottom:0;">
+                      <button onclick="saveMark('${rollNo}', ${i}, '${className}')" style="width:80px; padding:6px; font-size:12px; margin-bottom:0;">സേവ്</button></div>`;
+            }
+        }
+        document.getElementById('editArea').innerHTML = h;
+    }
+
+    function saveMark(rollNo, colIndex, className) {
+        let val = document.getElementById(`m_${colIndex}`).value;
+        fetch(`${webAppUrl}?action=saveTeacherMarks&className=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}&colIndex=${colIndex}&mark=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") alert("മാർക്ക് വിജയകരമായി സേവ് ചെയ്തു!");
+                else alert("പരാജയപ്പെട്ടു.");
+            });
+    }
+
+    function verifyAdmin() {
+        let pass = document.getElementById('adminPass').value;
+        if(pass === "admin123") {
+            showAdminDashboard();
+        } else {
+            alert("തെറ്റായ പാസ്‌വേർഡ്!");
+        }
+    }
+
+    function loadAdminReport() {
+        let className = document.getElementById('adminReportClassSelect').value;
+        if(!className) { alert("ക്ലാസ് തിരഞ്ഞെടുക്കുക!"); return; }
+
+        fetch(`${webAppUrl}?action=getAdminClassReport&className=${encodeURIComponent(className)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    hideAll();
+                    document.getElementById('adminReportView').style.display = 'block';
+                    let stats = data.stats;
+                    let h = `<p><b>ആകെ കുട്ടികൾ:</b> ${stats.total} | <span style="color:green;">പാസ്സ്: ${stats.passed}</span> | <span style="color:red;">തോറ്റു: ${stats.failed}</span> | <b>വിജയശതമാനം: ${stats.percentage}%</b></p>`;
+                    h += `<div style="overflow-x:auto;"><table><tr>`;
+                    data.headers.forEach(head => h += `<th>${head}</th>`);
+                    h += `<th>ഫലം</th></tr>`;
+                    
+                    data.rows.forEach(item => {
+                        h += `<tr>`;
+                        item.row.forEach(cell => h += `<td>${cell}</td>`);
+                        let resColor = item.pass ? "color:green;font-weight:bold;" : "color:red;font-weight:bold;";
+                        h += `<td style="${resColor}">${item.pass ? 'PASS' : 'FAIL'}</td></tr>`;
+                    });
+                    h += `</table></div>`;
+                    document.getElementById('adminReportContent').innerHTML = h;
+                }
+            });
+    }
+
+    function hideAll() {
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('resultView').style.display = 'none';
+        document.getElementById('teacherLoginView').style.display = 'none';
+        document.getElementById('teacherDashboard').style.display = 'none';
+        document.getElementById('adminLoginView').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'none';
+        document.getElementById('adminReportView').style.display = 'none';
+    }
+
+    function goHome() { hideAll(); document.getElementById('homeView').style.display = 'block'; }
+</script>
+
+</body>
+</html>
