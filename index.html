@@ -16,8 +16,8 @@
         .nav-links { display: flex; justify-content: space-between; margin-top: 10px; font-size: 13px; }
         .nav-links a { color: #1a73e8; text-decoration: none; cursor: pointer; font-weight: bold; }
         .info-box { text-align: left; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin-top: 10px; background: #fff; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
-        th, td { padding: 6px 8px; border: 1px solid #333; text-align: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+        th, td { padding: 5px 6px; border: 1px solid #333; text-align: center; }
         th { background: #f2f2f2; color: #000; }
         .sub-name { text-align: left !important; font-weight: bold; }
         .total-box { background: #1a73e8; color: white; padding: 8px; font-weight: bold; display: flex; justify-content: space-between; font-size: 15px; border-radius: 5px; margin-top: 10px; }
@@ -31,6 +31,8 @@
             body { background: white; padding: 0; } 
             .card { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             .info-box { border: none; padding: 0; }
+            table { font-size: 10px; }
+            th, td { padding: 3px 4px; }
         }
     </style>
 </head>
@@ -55,7 +57,7 @@
         </div>
     </div>
 
-    <!-- RESULT VIEW (ENGLISH) -->
+    <!-- RESULT VIEW -->
     <div id="resultView" style="display: none;">
         <div id="res"></div>
         <div class="btns">
@@ -100,23 +102,23 @@
         <select id="adminReportClassSelect">
             <option value="">Select Class</option>
         </select>
-        <button style="background: #1a73e8;" onclick="loadAdminReport()">View Class Report</button>
+        <button style="background: #1a73e8;" onclick="loadAdminReport()">View Class Report & Edit</button>
         <button style="background: #dc3545; margin-top: 15px;" onclick="goHome()">Logout</button>
     </div>
 
     <!-- ADMIN REPORT VIEW -->
     <div id="adminReportView" style="display: none; text-align: left;">
-        <h3 style="text-align:center;">Class Mark Report</h3>
+        <h3 style="text-align:center;">Class Mark Report & Management</h3>
         <div id="adminReportContent"></div>
         <div class="btns">
             <button class="btn" style="background: #6c757d;" onclick="showAdminDashboard()">Back</button>
-            <button class="btn" style="background: #28a745;" onclick="window.print()">Print Report</button>  
+            <button class="btn" style="background: #28a745;" onclick="window.print()">Print Report (A4)</button>  
         </div>
     </div>
 </div>
 
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbwZJW3F976TZdBzeuKgjog3IHSP38NI7NRAwatjVIm9KkDGPHeSKR5d7pS2agYHfu4nTg/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbwZnKKEukbLEH4UOuBvpFkCiwe6HDvzRMsiEl2hODGxvmX75SR60uzquuse6oV5h8M4/exec";
     let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL" };
     let currentTeacherClass = "";
 
@@ -234,10 +236,10 @@
         let h = `<h4>Student: ${row[1]} (Adm: ${rollNo})</h4>`;
         for(let i=2; i<headers.length; i++) {
             let head = headers[i];
-            if(head && !head.includes("TOTAL") && !head.includes("ATTENDANCE") && !head.includes("REMARKS")) {
+            if(head) {
                 h += `<label style="font-size:12px; font-weight:bold;">${head}:</label>
                       <div style="display:flex; gap:5px; margin-bottom:5px;">
-                      <input type="number" id="m_${i}" value="${row[i]}" style="margin-bottom:0;">
+                      <input type="text" id="m_${i}" value="${row[i]}" style="margin-bottom:0;">
                       <button onclick="saveMark('${rollNo}', ${i}, '${className}')" style="width:70px; padding:5px; font-size:11px; margin-bottom:0;">Save</button></div>`;
             }
         }
@@ -249,7 +251,7 @@
         fetch(`${webAppUrl}?action=saveTeacherMarks&className=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}&colIndex=${colIndex}&mark=${val}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status === "success") alert("Mark saved successfully!");
+                if(data.status === "success") alert("Updated successfully!");
                 else alert("Failed to save.");
             });
     }
@@ -305,19 +307,59 @@
                     document.getElementById('adminReportView').style.display = 'block';
                     let stats = data.stats;
                     let h = `<p><b>Total:</b> ${stats.total} | <span style="color:green;">Passed: ${stats.passed}</span> | <span style="color:red;">Failed: ${stats.failed}</span> | <b>Pass %: ${stats.percentage}%</b></p>`;
-                    h += `<div style="overflow-x:auto;"><table><tr>`;
+                    h += `<div style="overflow-x:auto;"><table><tr><th>Rank</th>`;
                     data.headers.forEach(head => h += `<th>${head}</th>`);
-                    h += `<th>Result</th></tr>`;
+                    h += `<th>Result</th><th>Action</th></tr>`;
                     
-                    data.rows.forEach(item => {
+                    data.rows.forEach((item, index) => {
                         h += `<tr>`;
-                        item.row.forEach(cell => h += `<td>${cell}</td>`);
+                        h += `<td><b>#${index + 1}</b></td>`;
+                        item.row.forEach(cell => h += `<td>${cell !== null && cell !== undefined ? cell : ''}</td>`);
                         let resColor = item.pass ? "color:green;font-weight:bold;" : "color:red;font-weight:bold;";
-                        h += `<td style="${resColor}">${item.pass ? 'PASS' : 'FAIL'}</td></tr>`;
+                        let admNo = item.row[0];
+                        h += `<td style="${resColor}">${item.pass ? 'PASS' : 'FAIL'}</td>`;
+                        h += `<td><button onclick='editMarksFromAdmin("${admNo}", "${className}")' style="padding:2px 5px; font-size:10px; background:#1a73e8; color:white; border:none; border-radius:4px;">Edit</button></td>`;
+                        h += `</tr>`;
                     });
-                    h += `</table></div>`;
+                    h += `</table></div><div id="adminEditArea" style="margin-top:15px; border-top:1px solid #ddd; padding-top:10px;"></div>`;
                     document.getElementById('adminReportContent').innerHTML = h;
                 }
+            });
+    }
+
+    function editMarksFromAdmin(rollNo, className) {
+        fetch(`${webAppUrl}?action=getTeacherClassData&className=${encodeURIComponent(className)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    let headers = data.headers;
+                    let studentRow = data.rows.find(r => r[0].toString().trim() === rollNo.toString().trim());
+                    if(studentRow) {
+                        let h = `<h4>Editing Student (Adm: ${rollNo}, Name: ${studentRow[1]})</h4>`;
+                        for(let i=2; i<headers.length; i++) {
+                            let head = headers[i];
+                            if(head) {
+                                h += `<label style="font-size:11px; font-weight:bold;">${head}:</label>
+                                      <div style="display:flex; gap:5px; margin-bottom:4px;">
+                                      <input type="text" id="adm_m_${i}" value="${studentRow[i]}" style="margin-bottom:0; padding:6px;">
+                                      <button onclick="saveAdminMark('${rollNo}', ${i}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
+                            }
+                        }
+                        document.getElementById('adminEditArea').innerHTML = h;
+                    }
+                }
+            });
+    }
+
+    function saveAdminMark(rollNo, colIndex, className) {
+        let val = document.getElementById(`adm_m_${colIndex}`).value;
+        fetch(`${webAppUrl}?action=saveTeacherMarks&className=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}&colIndex=${colIndex}&mark=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("Updated successfully!");
+                    loadAdminReport();
+                } else { alert("Failed to save."); }
             });
     }
 
