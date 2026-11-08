@@ -17,7 +17,6 @@
         .nav-links a { color: #1a73e8; text-decoration: none; cursor: pointer; font-weight: bold; }
         .info-box { text-align: left; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin-top: 10px; background: #fff; }
         
-        /* Web View Table Styles */
         table.web-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
         table.web-table th, table.web-table td { padding: 6px; border: 1px solid #333; text-align: center; }
         table.web-table th { background: #f2f2f2; color: #000; }
@@ -31,19 +30,19 @@
 
         /* Official A4 Print Sheet Layout */
         .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; }
-        .print-header { text-align: center; border: 2px solid #000; padding: 8px; margin-bottom: 5px; }
-        .print-header h2 { margin: 0; font-size: 18px; color: #000; font-weight: bold; text-transform: uppercase; }
-        .print-header h4 { margin: 3px 0 0 0; font-size: 14px; font-weight: bold; }
-        .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 12px; margin-bottom: 5px; border: 1px solid #000; padding: 4px 8px; }
+        .print-header { text-align: center; border: 2px solid #000; padding: 6px; margin-bottom: 4px; }
+        .print-header h2 { margin: 0; font-size: 16px; color: #000; font-weight: bold; text-transform: uppercase; }
+        .print-header h4 { margin: 2px 0 0 0; font-size: 12px; font-weight: bold; }
+        .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-bottom: 4px; border: 1px solid #000; padding: 3px 6px; }
         
-        table.mark-register { width: 100%; border-collapse: collapse; font-size: 11px; }
-        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 3px 4px; text-align: center; }
+        table.mark-register { width: 100%; border-collapse: collapse; font-size: 10px; }
+        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 2px 3px; text-align: center; }
         table.mark-register th { background-color: #f0f0f0; font-weight: bold; }
-        table.mark-register td.name-col { text-align: left; padding-left: 5px; font-weight: bold; }
+        table.mark-register td.name-col { text-align: left; padding-left: 4px; font-weight: bold; }
         
-        .summary-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; font-weight: bold; }
-        .summary-table td { border: 1px solid #000; padding: 4px; }
-        .sign-area { display: flex; justify-content: space-between; margin-top: 25px; font-weight: bold; font-size: 12px; padding: 0 10px; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 10px; font-weight: bold; }
+        .summary-table td { border: 1px solid #000; padding: 3px; text-align: center; }
+        .sign-area { display: flex; justify-content: space-between; margin-top: 15px; font-weight: bold; font-size: 11px; padding: 0 10px; }
 
         @media print {
             body { background: white; padding: 0; margin: 0; }
@@ -51,7 +50,7 @@
             .no-print, .nav-links, .btns, form, h3, .sub-title, button { display: none !important; }
             #adminReportContent { display: none !important; }
             .print-sheet { display: block !important; }
-            @page { size: A4 portrait; margin: 10mm; }
+            @page { size: A4 portrait; margin: 5mm; }
         }
     </style>
 </head>
@@ -76,7 +75,7 @@
         </div>
     </div>
 
-    <!-- RESULT VIEW (Student Individual Report) -->
+    <!-- RESULT VIEW -->
     <div id="resultView" style="display: none;">
         <div id="res"></div>
         <div class="btns no-print">
@@ -129,7 +128,6 @@
     <div id="adminReportView" style="display: none; text-align: left;">
         <h3 style="text-align:center;" class="no-print">Class Mark Report & Management</h3>
         
-        <!-- Screen View for Admin Editing -->
         <div id="adminReportContent" class="no-print"></div>
 
         <!-- Official Print Layout (A4 Format) -->
@@ -359,7 +357,6 @@
                     document.getElementById('adminReportView').style.display = 'block';
                     let stats = data.stats;
                     
-                    // Screen View Formatting
                     let h = `<p><b>Total:</b> ${stats.total} | <span style="color:green;">Passed: ${stats.passed}</span> | <span style="color:red;">Failed: ${stats.failed}</span> | <b>Pass %: ${stats.percentage}%</b></p>`;
                     h += `<div style="overflow-x:auto;"><table class="web-table"><tr><th>Rank</th>`;
                     data.headers.forEach(head => h += `<th>${head}</th>`);
@@ -378,7 +375,6 @@
                     h += `</table></div><div id="adminEditArea" style="margin-top:15px; border-top:1px solid #ddd; padding-top:10px;"></div>`;
                     document.getElementById('adminReportContent').innerHTML = h;
 
-                    // Build Official Print Sheet Format (Matching Image Format)
                     document.getElementById('pInst').innerText = globalConfig.institution;
                     document.getElementById('pExam').innerText = (globalConfig.examName || "ANNUAL EXAMINATION") + " MARK LIST";
                     document.getElementById('pClass').innerText = className;
@@ -392,6 +388,11 @@
                     let girlsCount = 0;
 
                     data.rows.forEach((item, idx) => {
+                        let studentName = item.row[1] ? item.row[1].toString() : "";
+                        // Check if student name is colored Red in sheet or marked as girl (using color property if available or default)
+                        // If name contains specific markers or text color check
+                        let isGirl = false; // Can be enhanced if color code is passed from script
+                        
                         pH += `<tr>`;
                         pH += `<td>${idx + 1}</td>`;
                         item.row.forEach((cell, cIdx) => {
@@ -404,15 +405,14 @@
                         pH += `<td><b>${item.pass ? 'P' : 'F'}</b></td>`;
                         pH += `<td><b>${idx + 1}</b></td>`;
                         pH += `</tr>`;
-
-                        // Simple detection for boys/girls if applicable, otherwise incrementing total
                         boysCount++;
                     });
 
                     pH += `</tbody></table>`;
                     document.getElementById('pTableArea').innerHTML = pH;
 
-                    // Update Print Summary Stats
+                    document.getElementById('pStatBoys').innerText = `BOYS: ${stats.total}`;
+                    document.getElementById('pStatGirls` + `).innerText = `GIRLS: 0`;
                     document.getElementById('pStatTotal').innerText = `TOTAL: ${stats.total}`;
                     document.getElementById('pStatPassed').innerText = `WON: ${stats.passed}`;
                     document.getElementById('pStatFailed').innerText = `FAILED: ${stats.failed}`;
