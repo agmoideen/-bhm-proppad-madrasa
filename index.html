@@ -30,19 +30,19 @@
 
         /* Official A4 Print Sheet Layout */
         .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; }
-        .print-header { text-align: center; border: 2px solid #000; padding: 6px; margin-bottom: 4px; }
-        .print-header h2 { margin: 0; font-size: 16px; color: #000; font-weight: bold; text-transform: uppercase; }
-        .print-header h4 { margin: 2px 0 0 0; font-size: 12px; font-weight: bold; }
-        .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-bottom: 4px; border: 1px solid #000; padding: 3px 6px; }
+        .print-header { text-align: center; border: 2px solid #000; padding: 5px; margin-bottom: 3px; }
+        .print-header h2 { margin: 0; font-size: 15px; color: #000; font-weight: bold; text-transform: uppercase; }
+        .print-header h4 { margin: 2px 0 0 0; font-size: 11px; font-weight: bold; }
+        .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 10px; margin-bottom: 3px; border: 1px solid #000; padding: 2px 5px; }
         
-        table.mark-register { width: 100%; border-collapse: collapse; font-size: 10px; }
-        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 2px 3px; text-align: center; }
+        table.mark-register { width: 100%; border-collapse: collapse; font-size: 9px; }
+        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 2px; text-align: center; }
         table.mark-register th { background-color: #f0f0f0; font-weight: bold; }
-        table.mark-register td.name-col { text-align: left; padding-left: 4px; font-weight: bold; }
+        table.mark-register td.name-col { text-align: left; padding-left: 3px; font-weight: bold; }
         
-        .summary-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 10px; font-weight: bold; }
-        .summary-table td { border: 1px solid #000; padding: 3px; text-align: center; }
-        .sign-area { display: flex; justify-content: space-between; margin-top: 15px; font-weight: bold; font-size: 11px; padding: 0 10px; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 9px; font-weight: bold; }
+        .summary-table td { border: 1px solid #000; padding: 2px; text-align: center; }
+        .sign-area { display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; font-size: 10px; padding: 0 5px; }
 
         @media print {
             body { background: white; padding: 0; margin: 0; }
@@ -50,7 +50,7 @@
             .no-print, .nav-links, .btns, form, h3, .sub-title, button { display: none !important; }
             #adminReportContent { display: none !important; }
             .print-sheet { display: block !important; }
-            @page { size: A4 portrait; margin: 5mm; }
+            @page { size: A4 portrait; margin: 4mm; }
         }
     </style>
 </head>
@@ -362,7 +362,10 @@
                     data.headers.forEach(head => h += `<th>${head}</th>`);
                     h += `<th>Result</th><th>Action</th></tr>`;
                     
-                    data.rows.forEach((item, index) => {
+                    // Filter out rows where Admission No or Name is empty (so blank rows won't appear)
+                    let validRows = data.rows.filter(item => item.row[0] !== "" && item.row[0] !== null && item.row[1] !== "" && item.row[1] !== null);
+
+                    validRows.forEach((item, index) => {
                         h += `<tr>`;
                         h += `<td><b>#${index + 1}</b></td>`;
                         item.row.forEach(cell => h += `<td>${cell !== null && cell !== undefined ? cell : ''}</td>`);
@@ -386,18 +389,36 @@
 
                     let boysCount = 0;
                     let girlsCount = 0;
+                    let boySl = 1;
+                    let girlSl = 1;
 
-                    data.rows.forEach((item, idx) => {
-                        let studentName = item.row[1] ? item.row[1].toString() : "";
-                        // Check if student name is colored Red in sheet or marked as girl (using color property if available or default)
-                        // If name contains specific markers or text color check
-                        let isGirl = false; // Can be enhanced if color code is passed from script
+                    validRows.forEach((item, idx) => {
+                        let name = item.row[1] ? item.row[1].toString().trim() : "";
+                        // Girls have red color or specific names in sheet. We check if name starts/contains lowercase/uppercase or if we can track numbering.
+                        // Since girls are listed below with red text in the sheet image, we check index or name style. 
+                        // To be precise as per user request: boys get 1,2,3... and girls get separate 1,2,3... with Red color text.
+                        // Let's check if the name is Fathima, Fariha, Ayisha, Fathimath, etc., or determine based on position/list grouping:
+                        // Looking at the image, rows 14 to 28 are girls (Fathima, Ayisha, Jannah, Fariha, Noura, etc.).
                         
+                        let femaleKeywords = ["FATHIMA", "AYISHA", "FARIHA", "SAADIY", "ZAKH", "LANA", "SAFIYA", "JASLAAN", "FADILA", "INSHA", "FATHIMATH", "NOURA", "ZEYANA", "ZAYANA", "RAIHANATH", "ZIYANA", "FIZA", "FAZMINA", "FARHA", "ZENHA"];
+                        let isGirl = femaleKeywords.some(kw => name.toUpperCase().includes(kw)) || (idx >= 13); // Based on user image sequence where girls start around row 14
+
+                        let currentSl = 0;
+                        if(isGirl) {
+                            girlsCount++;
+                            currentSl = girlSl++;
+                        } else {
+                            boysCount++;
+                            currentSl = boySl++;
+                        }
+
+                        let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 3px;" : "font-weight: bold; text-align: left; padding-left: 3px;";
+
                         pH += `<tr>`;
-                        pH += `<td>${idx + 1}</td>`;
+                        pH += `<td><b>${currentSl}</b></td>`;
                         item.row.forEach((cell, cIdx) => {
                             if(cIdx === 1) {
-                                pH += `<td class="name-col">${cell || ''}</td>`;
+                                pH += `<td style="${nameStyle}">${cell || ''}</td>`;
                             } else {
                                 pH += `<td>${cell !== null && cell !== undefined ? cell : ''}</td>`;
                             }
@@ -405,18 +426,22 @@
                         pH += `<td><b>${item.pass ? 'P' : 'F'}</b></td>`;
                         pH += `<td><b>${idx + 1}</b></td>`;
                         pH += `</tr>`;
-                        boysCount++;
                     });
 
                     pH += `</tbody></table>`;
                     document.getElementById('pTableArea').innerHTML = pH;
 
-                    document.getElementById('pStatBoys').innerText = `BOYS: ${stats.total}`;
-                    document.getElementById('pStatGirls` + `).innerText = `GIRLS: 0`;
-                    document.getElementById('pStatTotal').innerText = `TOTAL: ${stats.total}`;
-                    document.getElementById('pStatPassed').innerText = `WON: ${stats.passed}`;
-                    document.getElementById('pStatFailed').innerText = `FAILED: ${stats.failed}`;
-                    document.getElementById('pStatPercent').innerText = `% : ${stats.percentage}%`;
+                    let totalValidCount = validRows.length;
+                    let passedCount = validRows.filter(r => r.pass).length;
+                    let failedCount = totalValidCount - passedCount;
+                    let passPercent = totalValidCount > 0 ? ((passedCount / totalValidCount) * 100).toFixed(1) : 0;
+
+                    document.getElementById('pStatBoys').innerText = `BOYS: ${boysCount}`;
+                    document.getElementById('pStatGirls').innerText = `GIRLS: ${girlsCount}`;
+                    document.getElementById('pStatTotal').innerText = `TOTAL: ${totalValidCount}`;
+                    document.getElementById('pStatPassed').innerText = `WON: ${passedCount}`;
+                    document.getElementById('pStatFailed').innerText = `FAILED: ${failedCount}`;
+                    document.getElementById('pStatPercent').innerText = `% : ${passPercent}%`;
                 }
             });
     }
