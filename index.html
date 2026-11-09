@@ -28,29 +28,29 @@
         .btns { margin-top: 10px; display: flex; gap: 6px; }
         .btn { padding: 6px; border-radius: 5px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; color: white; flex: 1; text-align: center; font-size: 12px; }
 
-        /* Official A4 Print Sheet Layout - Perfectly Centered, Single Page Fit */
-        .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; padding: 5px; box-sizing: border-box; }
-        .print-header { text-align: center; border: 2px solid #000; padding: 3px; margin-bottom: 3px; }
+        /* Official A4 Print Sheet Layout - Strictly 1 Page Full Height Fit */
+        .print-sheet { display: none; width: 100%; height: 100vh; background: white; text-align: left; color: #000; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+        .print-header { text-align: center; border: 2px solid #000; padding: 3px; }
         .print-header h2 { margin: 0; font-size: 13px; color: #000; font-weight: bold; text-transform: uppercase; }
         .print-header h4 { margin: 1px 0 0 0; font-size: 9px; font-weight: bold; }
-        .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 9px; margin-bottom: 3px; border: 1px solid #000; padding: 2px 5px; }
+        .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 9px; border: 1px solid #000; border-top: none; padding: 2px 5px; }
         
         table.mark-register { width: 100%; border-collapse: collapse; font-size: 8.5px; }
-        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 2px; text-align: center; }
+        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 2.5px 2px; text-align: center; }
         table.mark-register th { background-color: #f0f0f0; font-weight: bold; }
         table.mark-register td.name-col { text-align: left; padding-left: 3px; font-weight: bold; }
         
-        .summary-table { width: 100%; border-collapse: collapse; margin-top: 3px; font-size: 8.5px; font-weight: bold; }
-        .summary-table td { border: 1px solid #000; padding: 2px; text-align: center; }
-        .sign-area { display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; font-size: 10px; padding: 0 5px; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 8.5px; font-weight: bold; }
+        .summary-table td { border: 1px solid #000; padding: 3px; text-align: center; }
+        .sign-area { display: flex; justify-content: space-between; font-weight: bold; font-size: 10px; padding: 5px 5px 0 5px; }
 
         @media print {
-            html, body { background: white; padding: 0; margin: 0; width: 100%; height: 100%; }
+            html, body { background: white; padding: 0; margin: 0; width: 100%; height: 100%; overflow: hidden; }
             .card { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
             .no-print, .nav-links, .btns, form, h3, .sub-title, button { display: none !important; }
             #adminReportContent { display: none !important; }
-            .print-sheet { display: block !important; width: 100%; margin: 0; }
-            @page { size: A4 portrait; margin: 6mm; }
+            .print-sheet { display: flex !important; width: 100%; height: 98vh; margin: 0; flex-direction: column; justify-content: space-between; }
+            @page { size: A4 portrait; margin: 4mm; }
         }
     </style>
 </head>
@@ -58,7 +58,7 @@
 
 <div class="card">
     <h2 id="institutionDisplay" class="no-print">BHM PROPPAD MADRASA</h2>
-    <div id="examTitleDisplay" class="sub-title no-print">EXAM PORTAL</div>
+    <div id="examTitleDisplay" class="sub-title no-print">HALF YEARLY EXAM 2026</div>
     
     <!-- HOME VIEW -->
     <div id="homeView" class="no-print">
@@ -132,31 +132,34 @@
 
         <!-- Official Print Layout (A4 Format) -->
         <div id="officialPrintSheet" class="print-sheet">
-            <div class="print-header">
-                <h2 id="pInst">BHM PROPPAD MADRASA</h2>
-                <h4 id="pExam">ANNUAL EXAMINATION MARK LIST</h4>
-            </div>
-            <div class="print-meta">
-                <span>CLASS: <span id="pClass"></span></span>
-                <span>DATE: <span id="pDate"></span></span>
+            <div>
+                <div class="print-header">
+                    <h2 id="pInst">BHM PROPPAD MADRASA</h2>
+                    <h4 id="pExam">ANNUAL EXAMINATION MARK LIST</h4>
+                </div>
+                <div class="print-meta">
+                    <span>CLASS: <span id="pClass"></span></span>
+                    <span>DATE: <span id="pDate"></span></span>
+                </div>
+                <div id="pTableArea"></div>
             </div>
             
-            <div id="pTableArea"></div>
-            
-            <table class="summary-table">
-                <tr>
-                    <td id="pStatBoys">BOYS: 0</td>
-                    <td id="pStatGirls">GIRLS: 0</td>
-                    <td id="pStatTotal">TOTAL: 0</td>
-                    <td id="pStatPassed">WON: 0</td>
-                    <td id="pStatFailed">FAILED: 0</td>
-                    <td id="pStatPercent">PASS %: 0%</td>
-                </tr>
-            </table>
+            <div>
+                <table class="summary-table">
+                    <tr>
+                        <td id="pStatBoys">BOYS: 0</td>
+                        <td id="pStatGirls">GIRLS: 0</td>
+                        <td id="pStatTotal">TOTAL: 0</td>
+                        <td id="pStatPassed">WON: 0</td>
+                        <td id="pStatFailed">FAILED: 0</td>
+                        <td id="pStatPercent">PASS %: 0%</td>
+                    </tr>
+                </table>
 
-            <div class="sign-area">
-                <span>CLASS TEACHER : ........................</span>
-                <span>SWADAR MUALLIM : ........................</span>
+                <div class="sign-area">
+                    <span>CLASS TEACHER : ........................</span>
+                    <span>SWADAR MUALLIM : ........................</span>
+                </div>
             </div>
         </div>
 
@@ -414,8 +417,7 @@
 
                     validRows.forEach((item, idx) => {
                         let name = item.row[2] ? item.row[2].toString().trim() : "";
-                        // ആദ്യത്തെ 12 പേർ (0 മുതൽ 11 വരെ) ആൺകുട്ടികൾ, ബാക്കി 15 പേർ പെൺകുട്ടികൾ
-                        let isGirl = (idx >= 12);
+                        let isGirl = (idx >= 12); // ആദ്യത്തെ 12 പേർ ആൺകുട്ടികൾ, ബാക്കി പെൺകുട്ടികൾ
 
                         if(isGirl) {
                             girlsCount++;
@@ -426,7 +428,6 @@
                         let rankObj = printScoredList.find(s => s.item === item);
                         let rank = rankObj ? printScoredList.indexOf(rankObj) + 1 : "-";
 
-                        // പെൺകുട്ടികൾക്ക് മാത്രം റെഡ് കളർ, ആൺകുട്ടികൾക്ക് കറുപ്പ്
                         let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 2px;" : "color: black; font-weight: bold; text-align: left; padding-left: 2px;";
 
                         pH += `<tr>`;
