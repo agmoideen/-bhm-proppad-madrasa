@@ -7,7 +7,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&display=swap');
         body { font-family: 'Manjari', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 900px; text-align: center; border-top: 6px solid #1a73e8; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 950px; text-align: center; border-top: 6px solid #1a73e8; }
         h2 { color: #1a73e8; margin-bottom: 5px; font-size: 20px; }
         .sub-title { font-size: 12px; background: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 12px; display: inline-block; font-weight: bold; margin-bottom: 12px; }
         select, input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
@@ -30,9 +30,9 @@
 
         /* Official A4 Print Sheet Layout */
         .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; }
-        .print-header { text-align: center; border: 2px solid #000; padding: 5px; margin-bottom: 3px; }
-        .print-header h2 { margin: 0; font-size: 15px; color: #000; font-weight: bold; text-transform: uppercase; }
-        .print-header h4 { margin: 2px 0 0 0; font-size: 11px; font-weight: bold; }
+        .print-header { text-align: center; border: 2px solid #000; padding: 4px; margin-bottom: 3px; }
+        .print-header h2 { margin: 0; font-size: 14px; color: #000; font-weight: bold; text-transform: uppercase; }
+        .print-header h4 { margin: 2px 0 0 0; font-size: 10px; font-weight: bold; }
         .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 10px; margin-bottom: 3px; border: 1px solid #000; padding: 2px 5px; }
         
         table.mark-register { width: 100%; border-collapse: collapse; font-size: 9px; }
@@ -41,8 +41,8 @@
         table.mark-register td.name-col { text-align: left; padding-left: 3px; font-weight: bold; }
         
         .summary-table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 9px; font-weight: bold; }
-        .summary-table td { border: 1px solid #000; padding: 2px; text-align: center; }
-        .sign-area { display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; font-size: 10px; padding: 0 5px; }
+        .summary-table td { border: 1px solid #000; padding: 3px; text-align: center; }
+        .sign-area { display: flex; justify-content: space-between; margin-top: 12px; font-weight: bold; font-size: 10px; padding: 0 5px; }
 
         @media print {
             body { background: white; padding: 0; margin: 0; }
@@ -168,7 +168,7 @@
 </div>
 
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbwZnKKEukbLEH4UOuBvpFkCiwe6HDvzRMsiEl2hODGxvmX75SR60uzquuse6oV5h8M4/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbx1RS0k_JxgDk-a8XZhsoMtzSRztlHAe_M38qIjiY_nhNdhyA3VBHEgnlOHKXCJ78AODw/exec";
     let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL" };
     let currentTeacherClass = "";
 
@@ -271,9 +271,9 @@
                     let rows = data.rows;
                     let h = `<p><b>Class: ${className} - Mark Entry & Edit</b></p><div style="max-height:250px; overflow-y:auto;"><table class="web-table"><tr><th>Adm</th><th>Name</th><th>Action</th></tr>`;
                     rows.forEach((r) => {
-                        h += `<tr><td>${r[0]}</td><td>${r[1]}</td><td>
-                                <button onclick='editMarks("${r[0]}", ${JSON.stringify(headers)}, ${JSON.stringify(r)}, "${className}")' style="padding:4px 6px; font-size:11px; width:auto; background:#1a73e8;">Edit</button>
-                                <button onclick='deleteStudent("${r[0]}", "${className}")' style="padding:4px 6px; font-size:11px; width:auto; background:#dc3545; margin-left:3px;">Del</button>
+                        h += `<tr><td>${r[1]}</td><td>${r[2]}</td><td>
+                                <button onclick='editMarks("${r[1]}", ${JSON.stringify(headers)}, ${JSON.stringify(r)}, "${className}")' style="padding:4px 6px; font-size:11px; width:auto; background:#1a73e8;">Edit</button>
+                                <button onclick='deleteStudent("${r[1]}", "${className}")' style="padding:4px 6px; font-size:11px; width:auto; background:#dc3545; margin-left:3px;">Del</button>
                               </td></tr>`;
                     });
                     h += `</table></div><div id="editArea" style="margin-top:10px; border-top:1px solid #ddd; padding-top:8px;"></div>`;
@@ -283,8 +283,8 @@
     }
 
     function editMarks(rollNo, headers, row, className) {
-        let h = `<h4>Student: ${row[1]} (Adm: ${rollNo})</h4>`;
-        for(let i=2; i<headers.length; i++) {
+        let h = `<h4>Student: ${row[2]} (Adm: ${rollNo})</h4>`;
+        for(let i=3; i<headers.length-3; i++) {
             let head = headers[i];
             if(head) {
                 h += `<label style="font-size:12px; font-weight:bold;">${head}:</label>
@@ -358,19 +358,17 @@
                     let stats = data.stats;
                     
                     let h = `<p><b>Total:</b> ${stats.total} | <span style="color:green;">Passed: ${stats.passed}</span> | <span style="color:red;">Failed: ${stats.failed}</span> | <b>Pass %: ${stats.percentage}%</b></p>`;
-                    h += `<div style="overflow-x:auto;"><table class="web-table"><tr><th>Rank</th>`;
+                    h += `<div style="overflow-x:auto;"><table class="web-table"><tr><th>SL No</th>`;
                     data.headers.forEach(head => h += `<th>${head}</th>`);
                     h += `<th>Result</th><th>Action</th></tr>`;
                     
-                    // Filter out rows where Admission No or Name is empty (so blank rows won't appear)
-                    let validRows = data.rows.filter(item => item.row[0] !== "" && item.row[0] !== null && item.row[1] !== "" && item.row[1] !== null);
+                    let validRows = data.rows.filter(item => item.row[1] !== "" && item.row[1] !== null && item.row[2] !== "" && item.row[2] !== null);
 
                     validRows.forEach((item, index) => {
                         h += `<tr>`;
-                        h += `<td><b>#${index + 1}</b></td>`;
                         item.row.forEach(cell => h += `<td>${cell !== null && cell !== undefined ? cell : ''}</td>`);
                         let resColor = item.pass ? "color:green;font-weight:bold;" : "color:red;font-weight:bold;";
-                        let admNo = item.row[0];
+                        let admNo = item.row[1];
                         h += `<td style="${resColor}">${item.pass ? 'PASS' : 'FAIL'}</td>`;
                         h += `<td><button onclick='editMarksFromAdmin("${admNo}", "${className}")' style="padding:2px 5px; font-size:10px; background:#1a73e8; color:white; border:none; border-radius:4px;">Edit</button></td>`;
                         h += `</tr>`;
@@ -383,41 +381,30 @@
                     document.getElementById('pClass').innerText = className;
                     document.getElementById('pDate').innerText = new Date().toLocaleDateString('en-GB');
 
-                    let pH = `<table class="mark-register"><thead><tr><th>SI No</th>`;
+                    let pH = `<table class="mark-register"><thead><tr>`;
                     data.headers.forEach(head => pH += `<th>${head}</th>`);
                     pH += `<th>RESULT</th><th>RANK</th></tr></thead><tbody>`;
 
                     let boysCount = 0;
                     let girlsCount = 0;
-                    let boySl = 1;
-                    let girlSl = 1;
 
                     validRows.forEach((item, idx) => {
-                        let name = item.row[1] ? item.row[1].toString().trim() : "";
-                        // Girls have red color or specific names in sheet. We check if name starts/contains lowercase/uppercase or if we can track numbering.
-                        // Since girls are listed below with red text in the sheet image, we check index or name style. 
-                        // To be precise as per user request: boys get 1,2,3... and girls get separate 1,2,3... with Red color text.
-                        // Let's check if the name is Fathima, Fariha, Ayisha, Fathimath, etc., or determine based on position/list grouping:
-                        // Looking at the image, rows 14 to 28 are girls (Fathima, Ayisha, Jannah, Fariha, Noura, etc.).
+                        let name = item.row[2] ? item.row[2].toString().trim() : "";
+                        let femaleKeywords = ["FATHIMA", "AYISHA", "FARIHA", "SAADIYA", "INSHA", "FADILA", "NOURA", "ZEYANA", "ZAYANA", "RAIHANATH", "ZIYANA", "FIZA", "FAZMINA", "FARHA", "ZENHA", "JASLAAN", "LANA", "SAFIYA", "JANNAH", "SHAZIN", "AYRA", "FATHIMATH"];
                         
-                        let femaleKeywords = ["FATHIMA", "AYISHA", "FARIHA", "SAADIY", "ZAKH", "LANA", "SAFIYA", "JASLAAN", "FADILA", "INSHA", "FATHIMATH", "NOURA", "ZEYANA", "ZAYANA", "RAIHANATH", "ZIYANA", "FIZA", "FAZMINA", "FARHA", "ZENHA"];
-                        let isGirl = femaleKeywords.some(kw => name.toUpperCase().includes(kw)) || (idx >= 13); // Based on user image sequence where girls start around row 14
+                        let isGirl = (idx >= 13) || femaleKeywords.some(kw => name.toUpperCase().includes(kw));
 
-                        let currentSl = 0;
                         if(isGirl) {
                             girlsCount++;
-                            currentSl = girlSl++;
                         } else {
                             boysCount++;
-                            currentSl = boySl++;
                         }
 
                         let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 3px;" : "font-weight: bold; text-align: left; padding-left: 3px;";
 
                         pH += `<tr>`;
-                        pH += `<td><b>${currentSl}</b></td>`;
                         item.row.forEach((cell, cIdx) => {
-                            if(cIdx === 1) {
+                            if(cIdx === 2) {
                                 pH += `<td style="${nameStyle}">${cell || ''}</td>`;
                             } else {
                                 pH += `<td>${cell !== null && cell !== undefined ? cell : ''}</td>`;
@@ -452,10 +439,10 @@
             .then(data => {
                 if(data.status === "success") {
                     let headers = data.headers;
-                    let studentRow = data.rows.find(r => r[0].toString().trim() === rollNo.toString().trim());
+                    let studentRow = data.rows.find(r => r[1].toString().trim() === rollNo.toString().trim());
                     if(studentRow) {
-                        let h = `<h4>Editing Student (Adm: ${rollNo}, Name: ${studentRow[1]})</h4>`;
-                        for(let i=2; i<headers.length; i++) {
+                        let h = `<h4>Editing Student (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
+                        for(let i=3; i<headers.length-3; i++) {
                             let head = headers[i];
                             if(head) {
                                 h += `<label style="font-size:11px; font-weight:bold;">${head}:</label>
