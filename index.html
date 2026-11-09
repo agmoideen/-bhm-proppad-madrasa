@@ -50,7 +50,7 @@
             .no-print, .nav-links, .btns, form, h3, .sub-title, button { display: none !important; }
             #adminReportContent { display: none !important; }
             .print-sheet { display: block !important; width: 100%; margin: 0; }
-            @page { size: A4 portrait; margin: 3mm; }
+            @page { size: A4 portrait; margin: 2mm; }
         }
     </style>
 </head>
@@ -414,7 +414,7 @@
 
                     validRows.forEach((item, idx) => {
                         let name = item.row[2] ? item.row[2].toString().trim() : "";
-                        // 정확하게 Class 3 ൽ ആദ്യത്തെ 12 പേർ (Index 0 മുതൽ 11 വരെ) ആൺകുട്ടികൾ, ബാക്കി 15 പേർ പെൺകുട്ടികൾ
+                        // ആൺകുട്ടികൾ ആദ്യത്തെ 12 പേർ (0 മുതൽ 11 വരെ), ബാക്കി 15 പേർ പെൺകുട്ടികൾ
                         let isGirl = (idx >= 12);
 
                         if(isGirl) {
@@ -426,7 +426,7 @@
                         let rankObj = printScoredList.find(s => s.item === item);
                         let rank = rankObj ? printScoredList.indexOf(rankObj) + 1 : "-";
 
-                        // പെൺകുട്ടികൾക്ക് മാത്രം റെഡ് കളർ, ആൺകുട്ടികൾക്ക് കറുപ്പ്
+                        // പെൺകുട്ടികൾക്ക് മാത്രം റെഡ് കളർ, ആൺകുട്ടികൾക്ക് കൃത്യമായി കറുപ്പ്
                         let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 2px;" : "color: black; font-weight: bold; text-align: left; padding-left: 2px;";
 
                         pH += `<tr>`;
@@ -483,6 +483,8 @@
                 }
             });
     }
+
+    print
 
     function saveAdminMark(rollNo, colIndex, className) {
         let val = document.getElementById(`adm_m_${colIndex}`).value;
