@@ -30,26 +30,26 @@
 
         /* Official A4 Print Sheet Layout - Full Page Optimization */
         .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; }
-        .print-header { text-align: center; border: 2px solid #000; padding: 3px; margin-bottom: 2px; }
+        .print-header { text-align: center; border: 2px solid #000; padding: 2px; margin-bottom: 2px; }
         .print-header h2 { margin: 0; font-size: 13px; color: #000; font-weight: bold; text-transform: uppercase; }
         .print-header h4 { margin: 1px 0 0 0; font-size: 9px; font-weight: bold; }
         .print-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 9px; margin-bottom: 2px; border: 1px solid #000; padding: 2px 4px; }
         
         table.mark-register { width: 100%; border-collapse: collapse; font-size: 8.5px; }
-        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 1.5px 2px; text-align: center; }
+        table.mark-register th, table.mark-register td { border: 1px solid #000; padding: 2px; text-align: center; }
         table.mark-register th { background-color: #f0f0f0; font-weight: bold; }
         table.mark-register td.name-col { text-align: left; padding-left: 3px; font-weight: bold; }
         
-        .summary-table { width: 100%; border-collapse: collapse; margin-top: 3px; font-size: 8.5px; font-weight: bold; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 8.5px; font-weight: bold; }
         .summary-table td { border: 1px solid #000; padding: 2px; text-align: center; }
-        .sign-area { display: flex; justify-content: space-between; margin-top: 8px; font-weight: bold; font-size: 9.5px; padding: 0 4px; }
+        .sign-area { display: flex; justify-content: space-between; margin-top: 6px; font-weight: bold; font-size: 9.5px; padding: 0 4px; }
 
         @media print {
-            body { background: white; padding: 0; margin: 0; height: 100%; }
+            html, body { background: white; padding: 0; margin: 0; width: 100%; height: 100%; }
             .card { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
             .no-print, .nav-links, .btns, form, h3, .sub-title, button { display: none !important; }
             #adminReportContent { display: none !important; }
-            .print-sheet { display: block !important; width: 100%; }
+            .print-sheet { display: block !important; width: 100%; margin: 0; }
             @page { size: A4 portrait; margin: 5mm; }
         }
     </style>
@@ -168,7 +168,7 @@
 </div>
 
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbx1RS0k_JxgDk-a8XZhsoMtzSRztlHAe_M38qIjiY_nhNdhyA3VBHEgnlOHKXCJ78AODw/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbzEMv6oxGu7EKsYF2r6uS7I5yIGSzYFewedd1NXqL7yzA7fsFoT92HdxKem0h4wF4qDqw/exec";
     let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL" };
     let currentTeacherClass = "";
 
@@ -364,7 +364,6 @@
                     
                     let validRows = data.rows.filter(item => item.row[1] !== "" && item.row[1] !== null && item.row[2] !== "" && item.row[2] !== null);
 
-                    // Calculate ranks based on total marks for web table preview
                     let scoredList = validRows.map(item => {
                         let totalMark = 0;
                         for(let j=3; j < data.headers.length - 3; j++) {
@@ -400,7 +399,6 @@
                     data.headers.forEach(head => pH += `<th>${head}</th>`);
                     pH += `<th>RESULT</th><th>RANK</th></tr></thead><tbody>`;
 
-                    // Calculate marks for Ranks in Print View
                     let printScoredList = validRows.map(item => {
                         let totalMark = 0;
                         for(let j=3; j < data.headers.length - 3; j++) {
@@ -416,9 +414,7 @@
 
                     validRows.forEach((item, idx) => {
                         let name = item.row[2] ? item.row[2].toString().trim() : "";
-                        let femaleKeywords = ["FATHIMA", "AYISHA", "FARIHA", "SAADIYA", "INSHA", "FADILA", "NOURA", "ZEYANA", "ZAYANA", "RAIHANATH", "ZIYANA", "FIZA", "FAZMINA", "FARHA", "ZENHA", "JASLAAN", "LANA", "SAFIYA", "JANNAH", "SHAZIN", "AYRA", "FATHIMATH"];
-                        
-                        let isGirl = (idx >= 13) || femaleKeywords.some(kw => name.toUpperCase().includes(kw));
+                        let isGirl = (idx >= 13); // Class 3 specific row index mapping for girls
 
                         if(isGirl) {
                             girlsCount++;
@@ -429,7 +425,7 @@
                         let rankObj = printScoredList.find(s => s.item === item);
                         let rank = rankObj ? printScoredList.indexOf(rankObj) + 1 : "-";
 
-                        let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 3px;" : "font-weight: bold; text-align: left; padding-left: 3px;";
+                        let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 3px;" : "color: black; font-weight: bold; text-align: left; padding-left: 3px;";
 
                         pH += `<tr>`;
                         item.row.forEach((cell, cIdx) => {
@@ -494,7 +490,7 @@
                 if(data.status === "success") {
                     alert("Updated successfully!");
                     loadAdminReport();
-                } else { alert("Failed to save.");}
+                } else { alert("Failed to save."); }
             });
     }
 
