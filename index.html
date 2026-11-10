@@ -287,13 +287,13 @@
 
     function editMarks(rollNo, headers, row, className) {
         let h = `<h4>Student: ${row[2]} (Adm: ${rollNo})</h4>`;
-        // Only loop through actual subject columns (exclude SL No, Adm No, Name, Total, Attendance, Remarks)
-        for(let i=3; i < headers.length - 3; i++) {
-            let head = headers[i];
-            if(head) {
-                h += `<label style="font-size:12px; font-weight:bold;">${head}:</label>
+        // Strictly target subject columns by checking column names
+        for(let i=3; i < headers.length; i++) {
+            let head = (headers[i] || "").toString().trim().toUpperCase();
+            if(head && head !== "TOTAL_MARK" && head !== "TOTAL MARK" && head !== "ATTENDANCE" && head !== "REMARKS") {
+                h += `<label style="font-size:12px; font-weight:bold;">${headers[i]}:</label>
                       <div style="display:flex; gap:5px; margin-bottom:5px;">
-                      <input type="text" id="m_${i}" value="${row[i]}" style="margin-bottom:0;">
+                      <input type="text" id="m_${i}" value="${row[i] !== undefined && row[i] !== null ? row[i] : ''}" style="margin-bottom:0;">
                       <button onclick="saveMark('${rollNo}', ${i}, '${className}')" style="width:70px; padding:5px; font-size:11px; margin-bottom:0;">Save</button></div>`;
             }
         }
@@ -370,9 +370,12 @@
 
                     let scoredList = validRows.map(item => {
                         let totalMark = 0;
-                        for(let j=3; j < data.headers.length - 3; j++) {
-                            let m = Number(item.row[j]);
-                            if(!isNaN(m)) totalMark += m;
+                        for(let j=3; j < data.headers.length; j++) {
+                            let head = (data.headers[j] || "").toString().trim().toUpperCase();
+                            if(head && head !== "TOTAL_MARK" && head !== "TOTAL MARK" && head !== "ATTENDANCE" && head !== "REMARKS") {
+                                let m = Number(item.row[j]);
+                                if(!isNaN(m)) totalMark += m;
+                            }
                         }
                         return { item: item, total: totalMark };
                     });
@@ -405,9 +408,12 @@
 
                     let printScoredList = validRows.map(item => {
                         let totalMark = 0;
-                        for(let j=3; j < data.headers.length - 3; j++) {
-                            let m = Number(item.row[j]);
-                            if(!isNaN(m)) totalMark += m;
+                        for(let j=3; j < data.headers.length; j++) {
+                            let head = (data.headers[j] || "").toString().trim().toUpperCase();
+                            if(head && head !== "TOTAL_MARK" && head !== "TOTAL MARK" && head !== "ATTENDANCE" && head !== "REMARKS") {
+                                let m = Number(item.row[j]);
+                                if(!isNaN(m)) totalMark += m;
+                            }
                         }
                         return { item: item, total: totalMark };
                     });
@@ -472,13 +478,13 @@
                     if(studentRow) {
                         let h = `<h4>Editing Student Marks (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
                         
-                        // Only loop through actual subjects (Quran, Hifl, Fiqh, Aqida, Lisan, Durus)
-                        for(let i=3; i < headers.length - 3; i++) {
-                            let head = headers[i];
-                            if(head) {
-                                h += `<label style="font-size:11px; font-weight:bold;">${head}:</label>
+                        // Loop specifically filtering out TOTAL_MARK, ATTENDANCE, and REMARKS by header text
+                        for(let i=3; i < headers.length; i++) {
+                            let head = (headers[i] || "").toString().trim().toUpperCase();
+                            if(head && head !== "TOTAL_MARK" && head !== "TOTAL MARK" && head !== "ATTENDANCE" && head !== "REMARKS") {
+                                h += `<label style="font-size:11px; font-weight:bold;">${headers[i]}:</label>
                                       <div style="display:flex; gap:5px; margin-bottom:4px;">
-                                      <input type="text" id="adm_m_${i}" value="${studentRow[i]}" style="margin-bottom:0; padding:6px;">
+                                      <input type="text" id="adm_m_${i}" value="${studentRow[i] !== undefined && studentRow[i] !== null ? studentRow[i] : ''}" style="margin-bottom:0; padding:6px;">
                                       <button onclick="saveAdminMark('${rollNo}', ${i}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
                             }
                         }
