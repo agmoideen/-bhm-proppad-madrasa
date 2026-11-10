@@ -58,7 +58,7 @@
 
 <div class="card">
     <h2 id="institutionDisplay" class="no-print">BHM PROPPAD MADRASA</h2>
-    <div id="examTitleDisplay" class="sub-title no-print">HALF YEARLY EXAM 2026</div>
+    <div id="examTitleDisplay" class="sub-title no-print">EXAM PORTAL</div>
     
     <!-- HOME VIEW -->
     <div id="homeView" class="no-print">
@@ -287,6 +287,7 @@
 
     function editMarks(rollNo, headers, row, className) {
         let h = `<h4>Student: ${row[2]} (Adm: ${rollNo})</h4>`;
+        // Include all subject columns up to headers.length - 3 (excluding Total, Attendance, Remarks)
         for(let i=3; i<headers.length-3; i++) {
             let head = headers[i];
             if(head) {
@@ -304,7 +305,10 @@
         fetch(`${webAppUrl}?action=saveTeacherMarks&className=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}&colIndex=${colIndex}&mark=${val}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status === "success") alert("Updated successfully!");
+                if(data.status === "success") {
+                    alert("Updated successfully!");
+                    loadAdminReport();
+                }
                 else alert("Failed to save.");
             });
     }
@@ -469,7 +473,9 @@
                     let headers = data.headers;
                     let studentRow = data.rows.find(r => r[1].toString().trim() === rollNo.toString().trim());
                     if(studentRow) {
-                        let h = `<h4>Editing Student Marks (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
+                        let h = `<h4>Editing Student Marks & Status (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
+                        
+                        // Loop through all subjects including DURUS
                         for(let i=3; i<headers.length-3; i++) {
                             let head = headers[i];
                             if(head) {
@@ -479,6 +485,14 @@
                                       <button onclick="saveAdminMark('${rollNo}', ${i}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
                             }
                         }
+
+                        // Pass/Fail Status Edit Option (Remarks or custom handling if needed, let's add Attendance/Remarks quick edit too)
+                        let remarksIdx = headers.length - 2; // Remarks column index assumption
+                        h += `<label style="font-size:11px; font-weight:bold; margin-top:8px; display:block;">Result Status / Remarks:</label>
+                              <div style="display:flex; gap:5px; margin-bottom:4px;">
+                              <input type="text" id="adm_m_${remarksIdx}" value="${studentRow[remarksIdx] || ''}" placeholder="Pass/Fail notes" style="margin-bottom:0; padding:6px;">
+                              <button onclick="saveAdminMark('${rollNo}', ${remarksIdx}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
+
                         document.getElementById('adminEditArea').innerHTML = h;
                     }
                 }
