@@ -28,7 +28,7 @@
         .btns { margin-top: 10px; display: flex; gap: 6px; }
         .btn { padding: 6px; border-radius: 5px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; color: white; flex: 1; text-align: center; font-size: 12px; }
 
-        /* Official A4 Print Sheet Layout - Fully Expanded to Fill A4 Page Height */
+        /* Official A4 Print Sheet Layout */
         .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; box-sizing: border-box; }
         .print-header { text-align: center; border: 2px solid #000; padding: 4px; margin-bottom: 3px; }
         .print-header h2 { margin: 0; font-size: 14px; color: #000; font-weight: bold; text-transform: uppercase; }
@@ -428,4 +428,95 @@
                         let rankObj = printScoredList.find(s => s.item === item);
                         let rank = rankObj ? printScoredList.indexOf(rankObj) + 1 : "-";
 
-                        let nameStyle = isGirl ? "color
+                        let nameStyle = isGirl ? "color: red; font-weight: bold; text-align: left; padding-left: 4px;" : "color: black; font-weight: bold; text-align: left; padding-left: 4px;";
+
+                        pH += `<tr>`;
+                        item.row.forEach((cell, cIdx) => {
+                            if(cIdx === 2) {
+                                pH += `<td style="${nameStyle}">${cell || ''}</td>`;
+                            } else {
+                                pH += `<td>${cell !== null && cell !== undefined ? cell : ''}</td>`;
+                            }
+                        });
+                        pH += `<td><b>${item.pass ? 'P' : 'F'}</b></td>`;
+                        pH += `<td><b>${rank}</b></td>`;
+                        pH += `</tr>`;
+                    });
+
+                    pH += `</tbody></table>`;
+                    document.getElementById('pTableArea').innerHTML = pH;
+
+                    let totalValidCount = validRows.length;
+                    let passedCount = validRows.filter(r => r.pass).length;
+                    let failedCount = totalValidCount - passedCount;
+                    let passPercent = totalValidCount > 0 ? ((passedCount / totalValidCount) * 100).toFixed(1) : 0;
+
+                    document.getElementById('pStatBoys').innerText = `BOYS: ${boysCount}`;
+                    document.getElementById('pStatGirls').innerText = `GIRLS: ${girlsCount}`;
+                    document.getElementById('pStatTotal').innerText = `TOTAL: ${totalValidCount}`;
+                    document.getElementById('pStatPassed').innerText = `WON: ${passedCount}`;
+                    document.getElementById('pStatFailed').innerText = `FAILED: ${failedCount}`;
+                    document.getElementById('pStatPercent').innerText = `% : ${passPercent}%`;
+                }
+            });
+    }
+
+    function editMarksFromAdmin(rollNo, className) {
+        fetch(`${webAppUrl}?action=getTeacherClassData&className=${encodeURIComponent(className)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    let headers = data.headers;
+                    let studentRow = data.rows.find(r => r[1].toString().trim() === rollNo.toString().trim());
+                    if(studentRow) {
+                        let h = `<h4>Editing Student Marks & Status (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
+                        
+                        for(let i=3; i < headers.length - 2; i++) {
+                            let head = headers[i];
+                            if(head) {
+                                h += `<label style="font-size:11px; font-weight:bold;">${head}:</label>
+                                      <div style="display:flex; gap:5px; margin-bottom:4px;">
+                                      <input type="text" id="adm_m_${i}" value="${studentRow[i]}" style="margin-bottom:0; padding:6px;">
+                                      <button onclick="saveAdminMark('${rollNo}', ${i}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
+                            }
+                        }
+
+                        let remarksIdx = headers.length - 1; 
+                        h += `<label style="font-size:11px; font-weight:bold; margin-top:8px; display:block;">Remarks / Status Notes:</label>
+                              <div style="display:flex; gap:5px; margin-bottom:4px;">
+                              <input type="text" id="adm_m_${remarksIdx}" value="${studentRow[remarksIdx] || ''}" placeholder="Notes" style="margin-bottom:0; padding:6px;">
+                              <button onclick="saveAdminMark('${rollNo}', ${remarksIdx}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
+
+                        document.getElementById('adminEditArea').innerHTML = h;
+                    }
+                }
+            });
+    }
+
+    function saveAdminMark(rollNo, colIndex, className) {
+        let val = document.getElementById(`adm_m_${colIndex}`).value;
+        fetch(`${webAppUrl}?action=saveTeacherMarks&className=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}&colIndex=${colIndex}&mark=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("Updated successfully!");
+                    loadAdminReport();
+                } else { alert("Failed to save."); }
+            });
+    }
+
+    function hideAll() {
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('resultView').style.display = 'none';
+        document.getElementById('teacherLoginView').style.display = 'none';
+        document.getElementById('teacherDashboard').style.display = 'none';
+        document.getElementById('adminLoginView').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'none';
+        document.getElementById('adminReportView').style.display = 'none';
+    }
+
+    function goHome() { hideAll(); document.getElementById('homeView').style.display = 'block'; }
+</script>
+
+</body>
+</html>
