@@ -287,7 +287,8 @@
 
     function editMarks(rollNo, headers, row, className) {
         let h = `<h4>Student: ${row[2]} (Adm: ${rollNo})</h4>`;
-        for(let i=3; i < headers.length - 2; i++) {
+        // Only loop through actual subject columns (exclude SL No, Adm No, Name, Total, Attendance, Remarks)
+        for(let i=3; i < headers.length - 3; i++) {
             let head = headers[i];
             if(head) {
                 h += `<label style="font-size:12px; font-weight:bold;">${head}:</label>
@@ -469,9 +470,10 @@
                     let headers = data.headers;
                     let studentRow = data.rows.find(r => r[1].toString().trim() === rollNo.toString().trim());
                     if(studentRow) {
-                        let h = `<h4>Editing Student Marks & Status (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
+                        let h = `<h4>Editing Student Marks (Adm: ${rollNo}, Name: ${studentRow[2]})</h4>`;
                         
-                        for(let i=3; i < headers.length - 2; i++) {
+                        // Only loop through actual subjects (Quran, Hifl, Fiqh, Aqida, Lisan, Durus)
+                        for(let i=3; i < headers.length - 3; i++) {
                             let head = headers[i];
                             if(head) {
                                 h += `<label style="font-size:11px; font-weight:bold;">${head}:</label>
@@ -480,12 +482,6 @@
                                       <button onclick="saveAdminMark('${rollNo}', ${i}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
                             }
                         }
-
-                        let remarksIdx = headers.length - 1; 
-                        h += `<label style="font-size:11px; font-weight:bold; margin-top:8px; display:block;">Remarks / Status Notes:</label>
-                              <div style="display:flex; gap:5px; margin-bottom:4px;">
-                              <input type="text" id="adm_m_${remarksIdx}" value="${studentRow[remarksIdx] || ''}" placeholder="Notes" style="margin-bottom:0; padding:6px;">
-                              <button onclick="saveAdminMark('${rollNo}', ${remarksIdx}, '${className}')" style="width:75px; padding:6px; font-size:11px; margin-bottom:0; background:#28a745;">Save</button></div>`;
 
                         document.getElementById('adminEditArea').innerHTML = h;
                     }
