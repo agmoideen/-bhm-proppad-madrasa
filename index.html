@@ -28,6 +28,14 @@
         .btns { margin-top: 10px; display: flex; gap: 6px; }
         .btn { padding: 6px; border-radius: 5px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; color: white; flex: 1; text-align: center; font-size: 12px; }
 
+        /* Daily Prayer & Activity Log Styling */
+        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 14px; font-weight: bold; }
+        .toggle-group { display: flex; gap: 6px; }
+        .t-btn { width: 42px; padding: 5px; margin: 0; border-radius: 6px; font-size: 13px; border: 1px solid #ccc; background: #f8f9fa; color: #333; cursor: pointer; }
+        .t-btn.active-yes { background: #28a745; color: white; border-color: #28a745; }
+        .t-btn.active-no { background: #dc3545; color: white; border-color: #dc3545; }
+        .point-badge { background: #e8f5e9; color: #2e7d32; padding: 8px; border-radius: 6px; font-weight: bold; margin: 10px 0; border: 1px solid #c8e6c9; text-align: center; }
+
         /* Official A4 Print Sheet Layout */
         .print-sheet { display: none; width: 100%; background: white; text-align: left; color: #000; box-sizing: border-box; }
         .print-header { text-align: center; border: 2px solid #000; padding: 4px; margin-bottom: 3px; }
@@ -69,10 +77,41 @@
             <input type="number" id="rollNo" placeholder="Admission Number" required>
             <button type="submit">View Progress Report</button>
         </form>
+        
+        <button onclick="showPrayerLogView()" style="background: #0f9d58; margin-top: 4px;">🕌 നിസ്കാര & ഡയറി ലോഗ് (Parents)</button>
+
         <div class="nav-links">
             <a onclick="showTeacherLogin()">Teacher Login</a>
             <a onclick="showAdminLogin()">Admin Panel</a>
         </div>
+    </div>
+
+    <!-- PARENT PRAYER & ACTIVITY LOG VIEW -->
+    <div id="prayerLogView" style="display: none; text-align: left;" class="no-print">
+        <h3 style="text-align:center; color:#0f9d58; margin-top:0;">നിസ്കാര & പഠന ഡയറി</h3>
+        <select id="logClassSelect">
+            <option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക (Select Class)</option>
+        </select>
+        <input type="number" id="logRollNo" placeholder="അഡ്മിഷൻ നമ്പർ (Admission No)">
+        <input type="date" id="logDate">
+        <button onclick="loadStudentLogForm()" style="background: #1a73e8;">വിവരങ്ങൾ തുറക്കുക</button>
+
+        <div id="logFormContainer" style="display:none; margin-top:10px; border:1px solid #ddd; border-radius:8px; padding:10px;">
+            <div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:8px;">
+                <div>കുട്ടിയുടെ പേര്: <b id="logStudentName" style="color:#1a73e8;"></b></div>
+                <div style="font-size:12px; color:#555;">ഇതുവരെയുള്ള ആകെ പോയിന്റ്: <b id="logTotalCumPoints">0</b></div>
+            </div>
+
+            <div style="font-size:12px; color:#666; margin-bottom:6px;">നിസ്കരിച്ചതിനും പ്രവർത്തനങ്ങൾക്കും ✔️ (ശരി) അല്ലെങ്കിൽ ❌ (തെറ്റ്) അടയാളപ്പെടുത്തുക:</div>
+            
+            <div id="logChecklist"></div>
+
+            <div class="point-badge">ഇന്നത്തെ പോയിന്റ്: <span id="todayPointsDisplay">0</span> / 9</div>
+
+            <button onclick="submitDailyLog()" style="background: #28a745; font-size:15px;">സേവ് ചെയ്യുക (Save Log)</button>
+        </div>
+
+        <button class="btn" style="background: #6c757d; margin-top:10px;" onclick="goHome()">Back to Home</button>
     </div>
 
     <!-- RESULT VIEW -->
@@ -96,6 +135,17 @@
     <div id="teacherDashboard" style="display: none; text-align: left;" class="no-print">
         <h3 id="teacherWelcome"></h3>
         <p>Allowed Class: <b id="tClassDisplay"></b></p>
+        
+        <!-- Teacher Daily Log Viewer -->
+        <div style="margin-bottom: 10px; background: #e8f5e9; padding: 8px; border-radius: 6px; border:1px solid #c8e6c9;">
+            <b>🕌 നിസ്കാര & ഡയറി റിപ്പോർട്ട് പരിശോധിക്കുക:</b>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <input type="date" id="tLogDate" style="margin-bottom:0;">
+                <button onclick="viewTeacherDailyLogs()" style="width:110px; margin-bottom:0; background:#0f9d58; font-size:12px;">റിപ്പോർട്ട് കാണുക</button>
+            </div>
+            <div id="teacherDailyLogResult" style="margin-top:6px; overflow-x:auto;"></div>
+        </div>
+
         <div style="margin-bottom: 10px; background: #e9ecef; padding: 8px; border-radius: 6px;">
             <b>Add New Student:</b>
             <input type="text" id="newAdm" placeholder="Admission No" style="margin-top: 5px; margin-bottom: 5px;">
@@ -171,11 +221,29 @@
 </div>
 
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbxT8Qk3tFKnvsr7Vzp4ZcPgQbgVtgwOAwBPO0qwZy6OlmtArVRsJSyB6uQ6OFR45Z1nJw/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbz9f2HNx5wdr-l2bjbdV9DeInXQcH4YPUiV9aHqFt5IVOItJtflFow9tlczc1p1gce6_A/exec";
     let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL" };
     let currentTeacherClass = "";
+    let currentLogStudentName = "";
+
+    const logItemsList = [
+        { key: "subh", label: "1. സുബ്ഹ് നിസ്കാരം (Subh)" },
+        { key: "dhuhr", label: "2. ളുഹർ നിസ്കാരം (Dhuhr)" },
+        { key: "asr", label: "3. അസർ നിസ്കാരം (Asr)" },
+        { key: "maghrib", label: "4. മഗ്‌രിബ് നിസ്കാരം (Maghrib)" },
+        { key: "isha", label: "5. ഇശാഅ് നിസ്കാരം (Isha)" },
+        { key: "quran", label: "6. ഖുർആൻ ഓത്ത് (Quran Reading)" },
+        { key: "kitab", label: "7. കിതാബ് വായന (Kitab Reading)" },
+        { key: "works", label: "8. വിഷയങ്ങളുടെ വർക്കുകൾ (Works)" },
+        { key: "hifl", label: "9. ഹിഫ്ള് പഠനം (Hifl)" }
+    ];
+    let logState = {};
 
     window.onload = function() {
+        let today = new Date().toISOString().split('T')[0];
+        document.getElementById('logDate').value = today;
+        document.getElementById('tLogDate').value = today;
+
         fetch(`${webAppUrl}?action=getClasses`)
             .then(res => res.json())
             .then(data => {
@@ -187,17 +255,125 @@
                     }
                     let select = document.getElementById('classSelect');
                     let adminSelect = document.getElementById('adminReportClassSelect');
+                    let logSelect = document.getElementById('logClassSelect');
+                    
                     select.innerHTML = '<option value="">Select Class</option>';
                     adminSelect.innerHTML = '<option value="">Select Class</option>';
+                    logSelect.innerHTML = '<option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക</option>';
                     
                     data.classes.forEach(cls => {
                         select.innerHTML += `<option value="${cls}">${cls}</option>`;
                         adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                        logSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
                     });
                 }
             });
     }
 
+    // --- PARENT PRAYER & ACTIVITY LOG LOGIC ---
+    function showPrayerLogView() {
+        hideAll();
+        document.getElementById('prayerLogView').style.display = 'block';
+        document.getElementById('logFormContainer').style.display = 'none';
+    }
+
+    function loadStudentLogForm() {
+        let cls = document.getElementById('logClassSelect').value;
+        let adm = document.getElementById('logRollNo').value.trim();
+        let dt = document.getElementById('logDate').value;
+
+        if(!cls || !adm || !dt) { alert("ദയവായി ക്ലാസ്, അഡ്മിഷൻ നമ്പർ, തീയതി എന്നിവ നൽകുക!"); return; }
+
+        fetch(`${webAppUrl}?action=getStudentForLog&class=${encodeURIComponent(cls)}&rollNo=${encodeURIComponent(adm)}&date=${encodeURIComponent(dt)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    currentLogStudentName = data.studentName;
+                    document.getElementById('logStudentName').innerText = data.studentName;
+                    document.getElementById('logTotalCumPoints').innerText = data.cumulativePoints;
+                    document.getElementById('logFormContainer').style.display = 'block';
+
+                    logItemsList.forEach((item, idx) => {
+                        if(data.existingLog && data.existingLog[idx + 4] === "✔️") {
+                            logState[item.key] = "1";
+                        } else {
+                            logState[item.key] = "0";
+                        }
+                    });
+                    renderLogChecklist();
+                } else {
+                    alert("ഈ അഡ്മിഷൻ നമ്പറിൽ കുട്ടിയെ കണ്ടെത്താനായില്ല!");
+                }
+            });
+    }
+
+    function renderLogChecklist() {
+        let html = "";
+        let points = 0;
+        logItemsList.forEach(item => {
+            let val = logState[item.key] || "0";
+            if(val === "1") points++;
+            html += `<div class="log-item">
+                        <span>${item.label}</span>
+                        <div class="toggle-group">
+                            <button type="button" class="t-btn ${val === '1' ? 'active-yes' : ''}" onclick="setLogVal('${item.key}', '1')">✔️</button>
+                            <button type="button" class="t-btn ${val === '0' ? 'active-no' : ''}" onclick="setLogVal('${item.key}', '0')">❌</button>
+                        </div>
+                     </div>`;
+        });
+        document.getElementById('logChecklist').innerHTML = html;
+        document.getElementById('todayPointsDisplay').innerText = points;
+    }
+
+    function setLogVal(key, val) {
+        logState[key] = val;
+        renderLogChecklist();
+    }
+
+    function submitDailyLog() {
+        let cls = document.getElementById('logClassSelect').value;
+        let adm = document.getElementById('logRollNo').value.trim();
+        let dt = document.getElementById('logDate').value;
+
+        let query = `${webAppUrl}?action=saveDailyLog&class=${encodeURIComponent(cls)}&rollNo=${encodeURIComponent(adm)}&studentName=${encodeURIComponent(currentLogStudentName)}&date=${encodeURIComponent(dt)}`;
+        logItemsList.forEach(item => {
+            query += `&${item.key}=${logState[item.key] || "0"}`;
+        });
+
+        fetch(query)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert(`വിജയകരമായി രേഖപ്പെടുത്തി! ഇന്നത്തെ പോയിന്റ്: ${data.points}/9`);
+                    loadStudentLogForm();
+                } else {
+                    alert("സേവ് ചെയ്യുന്നതിൽ പിശക് സംഭവിച്ചു.");
+                }
+            });
+    }
+
+    function viewTeacherDailyLogs() {
+        let dt = document.getElementById('tLogDate').value;
+        if(!dt) return;
+        fetch(`${webAppUrl}?action=getClassDailyLogs&className=${encodeURIComponent(currentTeacherClass)}&date=${encodeURIComponent(dt)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    if(data.logs.length === 0) {
+                        document.getElementById('teacherDailyLogResult').innerHTML = "<p style='font-size:12px; color:#666;'>ഈ തീയതിയിൽ രേഖകളൊന്നും ലഭ്യമല്ല.</p>";
+                        return;
+                    }
+                    let t = `<table class="web-table" style="font-size:10px;"><tr><th>Adm</th><th>Name</th><th>സു</th><th>ളു</th><th>അ</th><th>മ</th><th>ഇ</th><th>ഖു</th><th>കി</th><th>വ</th><th>ഹി</th><th>Pts</th></tr>`;
+                    data.logs.forEach(r => {
+                        t += `<tr><td>${r[2]}</td><td style="text-align:left;">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td><td>${r[8]}</td><td>${r[9]}</td><td>${r[10]}</td><td>${r[11]}</td><td>${r[12]}</td><td><b>${r[13]}</b></td></tr>`;
+                    });
+                    t += `</table>`;
+                    document.getElementById('teacherDailyLogResult').innerHTML = t;
+                }
+            });
+    }
+
+    // --- PROGRESS REPORT LOGIC ---
     document.getElementById('resultForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const rollNo = document.getElementById('rollNo').value.trim();
@@ -507,6 +683,7 @@
 
     function hideAll() {
         document.getElementById('homeView').style.display = 'none';
+        document.getElementById('prayerLogView').style.display = 'none';
         document.getElementById('resultView').style.display = 'none';
         document.getElementById('teacherLoginView').style.display = 'none';
         document.getElementById('teacherDashboard').style.display = 'none';
