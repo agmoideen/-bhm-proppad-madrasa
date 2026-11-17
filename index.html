@@ -78,7 +78,7 @@
             <button type="submit">View Progress Report</button>
         </form>
         
-        <button onclick="showPrayerLogView()" style="background: #0f9d58; margin-top: 4px;">🕌 നിസ്കാര & ഡയറി ലോഗ് (Parents)</button>
+        <button id="homePrayerBtn" onclick="showPrayerLogView()" style="background: #0f9d58; margin-top: 4px; display:none;">🕌 നിസ്കാര & ഡയറി ലോഗ് (Parents)</button>
 
         <div class="nav-links">
             <a onclick="showTeacherLogin()">Teacher Login</a>
@@ -136,7 +136,6 @@
         <h3 id="teacherWelcome"></h3>
         <p>Allowed Class: <b id="tClassDisplay"></b></p>
         
-        <!-- Teacher Daily Log Viewer -->
         <div style="margin-bottom: 10px; background: #e8f5e9; padding: 8px; border-radius: 6px; border:1px solid #c8e6c9;">
             <b>🕌 നിസ്കാര & ഡയറി റിപ്പോർട്ട് പരിശോധിക്കുക:</b>
             <div style="display:flex; gap:5px; margin-top:5px;">
@@ -167,6 +166,15 @@
     <!-- ADMIN DASHBOARD -->
     <div id="adminDashboard" style="display: none; text-align: left;" class="no-print">
         <h3>Admin Dashboard</h3>
+        
+        <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; margin-bottom: 10px; border:1px solid #d2e3fc;">
+            <b>⚙️ Master Feature Control (അഡ്മിൻ നിയന്ത്രണം):</b>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <span style="font-size:13px;">നിസ്കാര & ഡയറി ലോഗ് (Parents Log):</span>
+                <button id="togglePrayerLogBtn" onclick="togglePrayerLogFeature()" style="width:auto; padding:5px 12px; margin-bottom:0; font-size:12px; background:#28a745;">ON</button>
+            </div>
+        </div>
+
         <select id="adminReportClassSelect">
             <option value="">Select Class</option>
         </select>
@@ -221,8 +229,8 @@
 </div>
 
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbz9f2HNx5wdr-l2bjbdV9DeInXQcH4YPUiV9aHqFt5IVOItJtflFow9tlczc1p1gce6_A/exec";
-    let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL" };
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbygbW9kMb5rsvT-ulwGNBKFrCuWrJuBpltrzSDx6pWvhRs7-vefavre1gfcdTr55TK9Mg/exec";
+    let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL", prayerLogStatus: "ON" };
     let currentTeacherClass = "";
     let currentLogStudentName = "";
 
@@ -252,6 +260,7 @@
                         globalConfig = data.config;
                         document.getElementById('institutionDisplay').innerText = globalConfig.institution;
                         document.getElementById('examTitleDisplay').innerText = globalConfig.examName;
+                        updatePrayerLogVisibility(globalConfig.prayerLogStatus);
                     }
                     let select = document.getElementById('classSelect');
                     let adminSelect = document.getElementById('adminReportClassSelect');
@@ -270,7 +279,33 @@
             });
     }
 
-    // --- PARENT PRAYER & ACTIVITY LOG LOGIC ---
+    function updatePrayerLogVisibility(status) {
+        globalConfig.prayerLogStatus = status;
+        let btn = document.getElementById('homePrayerBtn');
+        let toggleBtn = document.getElementById('togglePrayerLogBtn');
+        if(status === "ON") {
+            btn.style.display = 'block';
+            toggleBtn.innerText = "ON";
+            toggleBtn.style.background = "#28a745";
+        } else {
+            btn.style.display = 'none';
+            toggleBtn.innerText = "OFF";
+            toggleBtn.style.background = "#dc3545";
+        }
+    }
+
+    function togglePrayerLogFeature() {
+        let newStatus = globalConfig.prayerLogStatus === "ON" ? "OFF" : "ON";
+        fetch(`${webAppUrl}?action=updateSystemConfig&status=${newStatus}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    updatePrayerLogVisibility(newStatus);
+                    alert(`മാറ്റം വിജയിച്ചു! ഫീച്ചർ ഇപ്പോൾ ${newStatus} ആക്കിയിരിക്കുന്നു.`);
+                }
+            });
+    }
+
     function showPrayerLogView() {
         hideAll();
         document.getElementById('prayerLogView').style.display = 'block';
@@ -287,6 +322,11 @@
         fetch(`${webAppUrl}?action=getStudentForLog&class=${encodeURIComponent(cls)}&rollNo=${encodeURIComponent(adm)}&date=${encodeURIComponent(dt)}`)
             .then(res => res.json())
             .then(data => {
+                if(data.status === "disabled") {
+                    alert("ഈ ഫീച്ചർ ഇപ്പോൾ അഡ്മിൻ താൽക്കാലികമായി ഓഫ് ചെയ്തിരിക്കുന്നു!");
+                    goHome();
+                    return;
+                }
                 if(data.status === "success") {
                     currentLogStudentName = data.studentName;
                     document.getElementById('logStudentName').innerText = data.studentName;
@@ -373,7 +413,6 @@
             });
     }
 
-    // --- PROGRESS REPORT LOGIC ---
     document.getElementById('resultForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const rollNo = document.getElementById('rollNo').value.trim();
