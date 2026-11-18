@@ -168,10 +168,16 @@
         <h3>Admin Dashboard</h3>
         
         <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; margin-bottom: 10px; border:1px solid #d2e3fc;">
-            <b>⚙️ Master Feature Control (അഡ്മിൻ നിയന്ത്രണം):</b>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                <span style="font-size:13px;">നിസ്കാര & ഡയറി ലോഗ് (Parents Log):</span>
-                <button id="togglePrayerLogBtn" onclick="togglePrayerLogFeature()" style="width:auto; padding:5px 12px; margin-bottom:0; font-size:12px; background:#28a745;">ON</button>
+            <b>⚙️ Master Feature Control (ഫീച്ചർ നിയന്ത്രണം):</b>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-bottom:1px solid #d2e3fc; padding-bottom:6px;">
+                <span style="font-size:13px;">നിസ്കാര & ഡയറി ലോഗ്:</span>
+                <button id="togglePrayerLogBtn" onclick="toggleFeature('PrayerLogStatus')" style="width:auto; padding:4px 10px; margin-bottom:0; font-size:12px; background:#28a745;">ON</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                <span style="font-size:13px;">പ്രോഗ്രസ് റിപ്പോർട്ട് (Result):</span>
+                <button id="toggleProgressReportBtn" onclick="toggleFeature('ProgressReportStatus')" style="width:auto; padding:4px 10px; margin-bottom:0; font-size:12px; background:#28a745;">ON</button>
             </div>
         </div>
 
@@ -229,8 +235,8 @@
 </div>
 
 <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbygbW9kMb5rsvT-ulwGNBKFrCuWrJuBpltrzSDx6pWvhRs7-vefavre1gfcdTr55TK9Mg/exec";
-    let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL", prayerLogStatus: "ON" };
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbx6lYQmzdvVlh0_gGMWjHuHgoTjsZUMmQOQCnYfOL35MYvHkf8D4_N4Ep7WTTTencFcVA/exec";
+    let globalConfig = { institution: "BHM PROPPAD MADRASA", examName: "EXAM PORTAL", prayerLogStatus: "ON", progressReportStatus: "ON" };
     let currentTeacherClass = "";
     let currentLogStudentName = "";
 
@@ -260,7 +266,8 @@
                         globalConfig = data.config;
                         document.getElementById('institutionDisplay').innerText = globalConfig.institution;
                         document.getElementById('examTitleDisplay').innerText = globalConfig.examName;
-                        updatePrayerLogVisibility(globalConfig.prayerLogStatus);
+                        updateFeatureVisibility('PrayerLogStatus', globalConfig.prayerLogStatus);
+                        updateFeatureVisibility('ProgressReportStatus', globalConfig.progressReportStatus);
                     }
                     let select = document.getElementById('classSelect');
                     let adminSelect = document.getElementById('adminReportClassSelect');
@@ -279,28 +286,38 @@
             });
     }
 
-    function updatePrayerLogVisibility(status) {
-        globalConfig.prayerLogStatus = status;
-        let btn = document.getElementById('homePrayerBtn');
-        let toggleBtn = document.getElementById('togglePrayerLogBtn');
-        if(status === "ON") {
-            btn.style.display = 'block';
-            toggleBtn.innerText = "ON";
-            toggleBtn.style.background = "#28a745";
-        } else {
-            btn.style.display = 'none';
-            toggleBtn.innerText = "OFF";
-            toggleBtn.style.background = "#dc3545";
+    function updateFeatureVisibility(keyName, status) {
+        if(keyName === 'PrayerLogStatus') {
+            globalConfig.prayerLogStatus = status;
+            let btn = document.getElementById('homePrayerBtn');
+            let toggleBtn = document.getElementById('togglePrayerLogBtn');
+            if(status === "ON") {
+                if(btn) btn.style.display = 'block';
+                if(toggleBtn) { toggleBtn.innerText = "ON"; toggleBtn.style.background = "#28a745"; }
+            } else {
+                if(btn) btn.style.display = 'none';
+                if(toggleBtn) { toggleBtn.innerText = "OFF"; toggleBtn.style.background = "#dc3545"; }
+            }
+        } else if(keyName === 'ProgressReportStatus') {
+            globalConfig.progressReportStatus = status;
+            let toggleBtn = document.getElementById('toggleProgressReportBtn');
+            if(status === "ON") {
+                if(toggleBtn) { toggleBtn.innerText = "ON"; toggleBtn.style.background = "#28a745"; }
+            } else {
+                if(toggleBtn) { toggleBtn.innerText = "OFF"; toggleBtn.style.background = "#dc3545"; }
+            }
         }
     }
 
-    function togglePrayerLogFeature() {
-        let newStatus = globalConfig.prayerLogStatus === "ON" ? "OFF" : "ON";
-        fetch(`${webAppUrl}?action=updateSystemConfig&status=${newStatus}`)
+    function toggleFeature(keyName) {
+        let currentStatus = (keyName === 'PrayerLogStatus') ? globalConfig.prayerLogStatus : globalConfig.progressReportStatus;
+        let newStatus = currentStatus === "ON" ? "OFF" : "ON";
+        
+        fetch(`${webAppUrl}?action=updateSystemConfig&key=${keyName}&status=${newStatus}`)
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
-                    updatePrayerLogVisibility(newStatus);
+                    updateFeatureVisibility(keyName, newStatus);
                     alert(`മാറ്റം വിജയിച്ചു! ഫീച്ചർ ഇപ്പോൾ ${newStatus} ആക്കിയിരിക്കുന്നു.`);
                 }
             });
@@ -425,6 +442,10 @@
         fetch(`${webAppUrl}?action=getResult&class=${encodeURIComponent(className)}&rollNo=${encodeURIComponent(rollNo)}`)
             .then(res => res.json())
             .then(data => {
+                if(data.status === "disabled") {
+                    document.getElementById('res').innerHTML = `<p style='color:red; text-align:center;'>പ്രോഗ്രസ് റിപ്പോർട്ട് ഫീച്ചർ ഇപ്പോൾ അഡ്മിൻ ഓഫ് ചെയ്തിരിക്കുന്നു.</p>`;
+                    return;
+                }
                 if(data.status === "success") {
                     let sRow = data.student;
                     let subjects = data.subjectDetails;
